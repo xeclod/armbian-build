@@ -41,10 +41,8 @@ jobs:
             BRANCH=current \
             RELEASE=bookworm \
             BUILD_MINIMAL=no \
-            BUILD_DESKTOP=no \
-            KERNEL_ONLY=no \
-            KERNEL_CONFIGURE=no
-
+            BUILD_DESKTOP=no
+            
       - name: Prepare release files
         run: |
           mkdir release

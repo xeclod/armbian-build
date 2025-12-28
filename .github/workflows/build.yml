@@ -24,7 +24,7 @@ jobs:
         run: |
           ./compile.sh build \
             BOARD=onethingcloud-oes \
-            BRANCH=current \
+            BRANCH=edge \
             RELEASE=bookworm \
             BUILD_MINIMAL=no \
             BUILD_DESKTOP=no \

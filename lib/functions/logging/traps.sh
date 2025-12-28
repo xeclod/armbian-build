@@ -192,7 +192,7 @@ function exit_with_error() {
 
 	# do NOT close the fd 13 here, otherwise the error will not be logged to logfile...
 
-	exit 43
+	return 0
 }
 
 # terminate build with a specific error code (44), meaning "target not supported".

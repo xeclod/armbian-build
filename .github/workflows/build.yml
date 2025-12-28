@@ -1,4 +1,4 @@
-name: Build Armbian Image (Trunk Compatible)
+name: Build Armbian Image (v24.11 Stable)
 
 on:
   workflow_dispatch:
@@ -11,7 +11,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 清理 Armbian 可能误判的旧缓存
+      # 切换到 Armbian 稳定版 v24.11
+      - name: Checkout Armbian v24.11
+        run: |
+          git fetch --all --tags
+          git checkout v24.11
+
+      # 清理旧缓存（避免 trunk 遗留文件）
       - name: Clean Armbian temp files
         run: |
           sudo rm -rf cache
@@ -40,18 +46,17 @@ jobs:
             libelf-dev qemu-user-static debootstrap \
             liblz4-tool python3 python3-distutils ccache
 
-      # 关键：忽略旧参数检测（解决 KERNEL_ONLY 报错）
+      # v24.11 支持 sudo，不会报错
       - name: Build Armbian image
         run: |
-          export ARMBIAN_IGNORE_DEPRECATED=yes
-          export ARMBIAN_NO_INTERACTIVE=yes
-          export ARMBIAN_ALLOW_ROOT=yes
-          ./compile.sh build \
+          sudo ./compile.sh \
             BOARD=onethingcloud-oes \
             BRANCH=current \
             RELEASE=bookworm \
             BUILD_MINIMAL=no \
-            BUILD_DESKTOP=no
+            BUILD_DESKTOP=no \
+            KERNEL_ONLY=no \
+            KERNEL_CONFIGURE=no
 
       - name: Prepare release files
         run: |

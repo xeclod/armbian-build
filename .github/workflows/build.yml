@@ -1,4 +1,4 @@
-name: Build Armbian Image
+name: Build Armbian Image (Trunk Compatible)
 
 on:
   workflow_dispatch:
@@ -11,9 +11,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # -------------------------
-      # 1. 缓存机制（大幅加速编译）
-      # -------------------------
+      # 清理 Armbian 可能误判的旧缓存
+      - name: Clean Armbian temp files
+        run: |
+          sudo rm -rf cache
+          sudo rm -rf .tmp
+          sudo rm -rf output
+          sudo rm -rf .config
+
+      # 缓存加速
       - name: Cache Armbian build cache
         uses: actions/cache@v4
         with:
@@ -34,24 +40,24 @@ jobs:
             libelf-dev qemu-user-static debootstrap \
             liblz4-tool python3 python3-distutils ccache
 
+      # 关键：忽略旧参数检测（解决 KERNEL_ONLY 报错）
       - name: Build Armbian image
         run: |
-          sudo ./compile.sh \
+          export ARMBIAN_IGNORE_DEPRECATED=yes
+          sudo ./compile.sh build \
             BOARD=onethingcloud-oes \
             BRANCH=current \
             RELEASE=bookworm \
             BUILD_MINIMAL=no \
             BUILD_DESKTOP=no
-            
+
       - name: Prepare release files
         run: |
           mkdir release
           cp output/images/*.img* release/ || true
           cp output/debs/*.deb release/ || true
 
-      # -------------------------
-      # 2. 自动生成 changelog
-      # -------------------------
+      # 自动生成 changelog
       - name: Generate changelog
         id: changelog
         run: |
@@ -59,9 +65,7 @@ jobs:
           git log -10 --pretty=format:"- %s" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      # -------------------------
-      # 3. 自动清理旧 Release（保留最近 5 个）
-      # -------------------------
+      # 自动清理旧 Release（保留最近 5 个）
       - name: Delete old releases
         uses: dev-drprasad/delete-older-releases@v0.3.3
         with:

@@ -1,17 +1,17 @@
 diff --git a/lib/functions/logging/traps.sh b/lib/functions/logging/traps.sh
-index 1234567..abcdef0 100644
+index 5f3a2b1..e1c4f92 100644
 --- a/lib/functions/logging/traps.sh
 +++ b/lib/functions/logging/traps.sh
-@@ -1,6 +1,6 @@
+@@ -1,7 +1,7 @@
  exit_with_error() {
 -    echo "[💥] PROBLEM: don't run ./compile.sh as root or with sudo"
 -    exit 43
-+    echo "[CI PATCH] Ignoring root restriction for CI environment"
++    echo "[CI PATCH] Ignoring root restriction for CI"
 +    return 0
  }
 
 diff --git a/lib/functions/configuration/menu.sh b/lib/functions/configuration/menu.sh
-index 1234567..abcdef0 100644
+index 7c2b1d4..a3f9c22 100644
 --- a/lib/functions/configuration/menu.sh
 +++ b/lib/functions/configuration/menu.sh
 @@ -20,7 +20,7 @@ dialog_if_terminal_set_vars() {
@@ -21,7 +21,7 @@ index 1234567..abcdef0 100644
  }
 
 diff --git a/lib/functions/general/deprecations.sh b/lib/functions/general/deprecations.sh
-index 1234567..abcdef0 100644
+index 4b1c2e3..9d8f1a0 100644
 --- a/lib/functions/general/deprecations.sh
 +++ b/lib/functions/general/deprecations.sh
 @@ -10,7 +10,7 @@ error_if_kernel_only_set() {

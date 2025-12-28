@@ -26,9 +26,11 @@ jobs:
             BOARD=onethingcloud-oes \
             BRANCH=edge \
             RELEASE=bookworm \
+            KERNELBRANCH=tag:v6.18.12 \
             BUILD_MINIMAL=no \
             BUILD_DESKTOP=no \
             KERNEL_CONFIGURE=no
+
 
       - name: Prepare release files
         run: |

@@ -18,35 +18,42 @@
 # warning: this will exit with error if stdin/stdout/stderr is not a terminal or running under CI, or if dialog not installed
 # otherwise it will NOT exit with error, even if user cancelled.
 # This is a boring topic, see https://askubuntu.com/questions/491509/how-to-get-dialog-box-input-directed-to-a-variable
+# function dialog_if_terminal_set_vars() {
+# 	declare -g DIALOG_RESULT=""
+# 	declare -g DIALOG_EXIT_CODE=0
+
+# 	[[ ! -t 0 ]] && exit_with_error "stdin is not a terminal. can't use dialog." "dialog_if_terminal_set_vars ${*}" "err"
+# 	[[ ! -t 1 ]] && exit_with_error "stdout is not a terminal. can't use dialog." "dialog_if_terminal_set_vars ${*}" "err"
+# 	[[ ! -t 2 ]] && exit_with_error "stderr is not a terminal. can't use dialog." "dialog_if_terminal_set_vars ${*}" "err"
+
+# 	[[ "${CI}" == "true" ]] && exit_with_error "CI=true. can't use dialog." "dialog_if_terminal_set_vars ${*}" "err"
+
+# 	[[ ! -f /usr/bin/dialog ]] && exit_with_error "Dialog is not installed at /usr/bin/dialog" "dialog_if_terminal_set_vars ${*}" "err"
+
+# 	set +e          # allow errors through
+# 	set +o errtrace # do not trap errors inside a subshell/function
+# 	set +o errexit  # disable
+
+# 	exec 3>&1                              # open fd 3...
+# 	DIALOG_RESULT=$(dialog "$@" 2>&1 1>&3) # juggle fds and capture.
+# 	DIALOG_EXIT_CODE=$?                    # get the exit code.
+# 	exec 3>&-                              # close fd 3...
+
+# 	set -e          # back to normal
+# 	set -o errtrace # back to normal
+# 	set -o errexit  # back to normal
+
+# 	# clear the screen after dialog exits; that way we can see the log output that comes after it?
+# 	clear
+
+# 	return 0 # always success, caller must check DIALOG_EXIT_CODE and DIALOG_RESULT
+# }
+
 function dialog_if_terminal_set_vars() {
 	declare -g DIALOG_RESULT=""
 	declare -g DIALOG_EXIT_CODE=0
-
-	[[ ! -t 0 ]] && exit_with_error "stdin is not a terminal. can't use dialog." "dialog_if_terminal_set_vars ${*}" "err"
-	[[ ! -t 1 ]] && exit_with_error "stdout is not a terminal. can't use dialog." "dialog_if_terminal_set_vars ${*}" "err"
-	[[ ! -t 2 ]] && exit_with_error "stderr is not a terminal. can't use dialog." "dialog_if_terminal_set_vars ${*}" "err"
-
-	[[ "${CI}" == "true" ]] && exit_with_error "CI=true. can't use dialog." "dialog_if_terminal_set_vars ${*}" "err"
-
-	[[ ! -f /usr/bin/dialog ]] && exit_with_error "Dialog is not installed at /usr/bin/dialog" "dialog_if_terminal_set_vars ${*}" "err"
-
-	set +e          # allow errors through
-	set +o errtrace # do not trap errors inside a subshell/function
-	set +o errexit  # disable
-
-	exec 3>&1                              # open fd 3...
-	DIALOG_RESULT=$(dialog "$@" 2>&1 1>&3) # juggle fds and capture.
-	DIALOG_EXIT_CODE=$?                    # get the exit code.
-	exec 3>&-                              # close fd 3...
-
-	set -e          # back to normal
-	set -o errtrace # back to normal
-	set -o errexit  # back to normal
-
-	# clear the screen after dialog exits; that way we can see the log output that comes after it?
-	clear
-
-	return 0 # always success, caller must check DIALOG_EXIT_CODE and DIALOG_RESULT
+	echo "[CI PATCH] dialog disabled"
+	return 0
 }
 
 # Myy : Menu configuration for choosing desktop configurations

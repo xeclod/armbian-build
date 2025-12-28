@@ -44,7 +44,9 @@ jobs:
       - name: Build Armbian image
         run: |
           export ARMBIAN_IGNORE_DEPRECATED=yes
-          sudo ./compile.sh build \
+          export ARMBIAN_NO_INTERACTIVE=yes
+          export ARMBIAN_ALLOW_ROOT=yes
+          ./compile.sh build \
             BOARD=onethingcloud-oes \
             BRANCH=current \
             RELEASE=bookworm \

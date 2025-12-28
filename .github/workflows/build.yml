@@ -1,4 +1,4 @@
-name: Build Armbian Image (v24.11 Stable)
+name: Build Armbian trunk (CI patched)
 
 on:
   workflow_dispatch:
@@ -11,31 +11,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 切换到 Armbian 稳定版 v24.11
-      - name: Checkout Armbian v24.11
+      - name: Apply CI patch
         run: |
-          git fetch --all --tags
-          git checkout v24.11
-
-      # 清理旧缓存（避免 trunk 遗留文件）
-      - name: Clean Armbian temp files
-        run: |
-          sudo rm -rf cache
-          sudo rm -rf .tmp
-          sudo rm -rf output
-          sudo rm -rf .config
-
-      # 缓存加速
-      - name: Cache Armbian build cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            cache
-            output/debs
-            ~/.ccache
-          key: armbian-cache-${{ runner.os }}-${{ github.sha }}
-          restore-keys: |
-            armbian-cache-${{ runner.os }}-
+          git apply patches/ci-friendly.patch
 
       - name: Install dependencies
         run: |
@@ -46,17 +24,14 @@ jobs:
             libelf-dev qemu-user-static debootstrap \
             liblz4-tool python3 python3-distutils ccache
 
-      # v24.11 支持 sudo，不会报错
       - name: Build Armbian image
         run: |
-          sudo ./compile.sh \
+          ./compile.sh build \
             BOARD=onethingcloud-oes \
             BRANCH=current \
             RELEASE=bookworm \
             BUILD_MINIMAL=no \
-            BUILD_DESKTOP=no \
-            KERNEL_ONLY=no \
-            KERNEL_CONFIGURE=no
+            BUILD_DESKTOP=no
 
       - name: Prepare release files
         run: |
@@ -64,7 +39,6 @@ jobs:
           cp output/images/*.img* release/ || true
           cp output/debs/*.deb release/ || true
 
-      # 自动生成 changelog
       - name: Generate changelog
         id: changelog
         run: |
@@ -72,7 +46,6 @@ jobs:
           git log -10 --pretty=format:"- %s" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      # 自动清理旧 Release（保留最近 5 个）
       - name: Delete old releases
         uses: dev-drprasad/delete-older-releases@v0.3.3
         with:

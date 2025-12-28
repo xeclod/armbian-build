@@ -11,9 +11,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Apply CI patch
-        run: |
-          git apply patches/ci-friendly.patch
+      # - name: Apply CI patch
+      #   run: |
+      #     git apply patches/ci-friendly.patch
 
       - name: Install dependencies
         run: |

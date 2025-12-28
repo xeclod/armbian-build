@@ -27,7 +27,8 @@ jobs:
             BRANCH=current \
             RELEASE=bookworm \
             BUILD_MINIMAL=no \
-            BUILD_DESKTOP=no
+            BUILD_DESKTOP=no \
+            KERNEL_CONFIGURE=no
 
       - name: Prepare release files
         run: |

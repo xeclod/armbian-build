@@ -9,16 +9,30 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Setup build environment
+      # -------------------------
+      # 1. 缓存机制（大幅加速编译）
+      # -------------------------
+      - name: Cache Armbian build cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            cache
+            output/debs
+            ~/.ccache
+          key: armbian-cache-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            armbian-cache-${{ runner.os }}-
+
+      - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install -y \
             git build-essential gcc g++ bc \
             libncurses-dev libssl-dev bison flex \
             libelf-dev qemu-user-static debootstrap \
-            liblz4-tool python3 python3-distutils
+            liblz4-tool python3 python3-distutils ccache
 
       - name: Build Armbian image
         run: |
@@ -37,19 +51,46 @@ jobs:
           cp output/images/*.img* release/ || true
           cp output/debs/*.deb release/ || true
 
+      # -------------------------
+      # 2. 自动生成 changelog
+      # -------------------------
+      - name: Generate changelog
+        id: changelog
+        run: |
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          git log -10 --pretty=format:"- %s" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      # -------------------------
+      # 3. 自动清理旧 Release（保留最近 5 个）
+      # -------------------------
+      - name: Delete old releases
+        uses: dev-drprasad/delete-older-releases@v0.3.3
+        with:
+          keep_latest: 5
+          delete_tags: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: armbian-build-output
           path: release/
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: armbian-oes-${{ github.run_number }}
           name: Armbian OES Build ${{ github.run_number }}
-          draft: false
-          prerelease: false
+          body: |
+            ## 自动生成的更新日志
+            ${{ steps.changelog.outputs.changelog }}
+
+            ## 构建信息
+            - BOARD: onethingcloud-oes
+            - BRANCH: current
+            - RELEASE: bookworm
           files: release/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
